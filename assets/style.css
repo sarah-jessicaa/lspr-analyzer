@@ -1,0 +1,67 @@
+:root {
+    --ink: #1a365d;
+    --muted: #64748b;
+    --line: #e2e8f0;
+}
+
+html,
+body,
+[class*="css"] {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 0.25rem 0;
+}
+
+.header-sub {
+    color: var(--muted);
+    margin: 0 0 1.5rem 0;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 1.25rem 0 0.6rem 0;
+}
+
+.metric-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    background: #f8fafc;
+}
+
+.metric-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.metric-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#MainMenu,
+footer,
+header {
+    visibility: hidden;
+}
+
+.stTabs [data-baseweb="tab"] {
+    font-weight: 600;
+    color: #64748b;
+}
+
+.stTabs [aria-selected="true"] {
+    color: #1a365d;
+}
