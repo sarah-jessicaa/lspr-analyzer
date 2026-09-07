@@ -5,3 +5,4 @@ scipy>=1.13
 plotly>=5.22
 scikit-learn>=1.5
 openpyxl>=3.1
+xgboost>=2.0

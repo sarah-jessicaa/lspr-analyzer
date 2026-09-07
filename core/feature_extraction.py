@@ -7,6 +7,7 @@ FEATURE_COLUMNS = [
     "q_factor", "asymmetry",
     "intensity_450", "intensity_550", "intensity_650",
     "slope_400_500", "slope_500_600", "slope_600_700",
+    "ratio_450_650", "ratio_550_650", "centroid_wavelength", "skewness",
 ]
 
 
@@ -20,7 +21,7 @@ def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_r
     y = savgol_filter(intensity, window, polyorder)
 
     # smoothing tebal khusus deteksi peak, agar stabil di plateau datar
-    det_window = 151 if intensity.size > 151 else (intensity.size // 2) * 2 + 1
+    det_window = 151 if intensity.size > 151 else max(5, ((intensity.size - 1) // 2) * 2 + 1)
     y_det = savgol_filter(intensity, det_window, 3)
     prominence = prominence_ratio * (y_det.max() - y_det.min())
 
@@ -56,5 +57,19 @@ def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_r
         m = (wavelength >= lo) & (wavelength <= hi)
         if m.sum() > 1:
             feats[f"slope_{lo}_{hi}"] = np.polyfit(wavelength[m], y[m], 1)[0]
+
+    i650 = feats["intensity_650"]
+    if i650 is not None and not np.isnan(i650) and i650 != 0:
+        feats["ratio_450_650"] = feats["intensity_450"] / i650
+        feats["ratio_550_650"] = feats["intensity_550"] / i650
+
+    w = y - y.min()
+    total = w.sum()
+    if total > 0:
+        centroid = np.average(wavelength, weights=w)
+        m2 = np.average((wavelength - centroid) ** 2, weights=w)
+        m3 = np.average((wavelength - centroid) ** 3, weights=w)
+        feats["centroid_wavelength"] = centroid
+        feats["skewness"] = m3 / m2 ** 1.5 if m2 > 0 else np.nan
 
     return feats
