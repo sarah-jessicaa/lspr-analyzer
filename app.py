@@ -28,10 +28,6 @@ with st.sidebar:
     st.markdown('<div class="section-title">Preprocessing</div>', unsafe_allow_html=True)
     window = st.slider("Smoothing window", 5, 51, 11, step=2)
     prominence_ratio = st.slider("Peak prominence ratio", 0.01, 0.20, 0.05, step=0.01)
-    st.caption(
-        "Peak band center and FWHM use a fixed heavy smoothing for stability; "
-        "this window controls the displayed curve and shape-based features."
-    )
 
     st.markdown('<div class="section-title">Comparison</div>', unsafe_allow_html=True)
     color_by = st.radio(
