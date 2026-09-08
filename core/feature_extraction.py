@@ -12,13 +12,23 @@ FEATURE_COLUMNS = [
 
 
 def smooth(intensity, window=11, polyorder=2):
-    return savgol_filter(np.asarray(intensity, dtype=float), window, polyorder)
+    x = np.asarray(intensity, dtype=float)
+    w = int(window)
+    if w % 2 == 0:
+        w -= 1
+    if w > x.size:
+        w = x.size if x.size % 2 == 1 else x.size - 1
+    if w <= polyorder:
+        return x.copy()
+    return savgol_filter(x, w, polyorder)
 
 
 def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_ratio=0.05):
     wavelength = np.asarray(wavelength, dtype=float)
     intensity = np.asarray(intensity, dtype=float)
-    y = savgol_filter(intensity, window, polyorder)
+    if intensity.size < 8:
+        return {name: np.nan for name in FEATURE_COLUMNS}
+    y = smooth(intensity, window, polyorder)
 
     # smoothing tebal khusus deteksi peak, agar stabil di plateau datar
     det_window = 151 if intensity.size > 151 else max(5, ((intensity.size - 1) // 2) * 2 + 1)
@@ -51,7 +61,9 @@ def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_r
         feats["asymmetry"] = (right_wl + left_wl - 2 * peak_wl) / width
 
     for target in (450, 550, 650):
-        feats[f"intensity_{target}"] = np.interp(target, wavelength, y)
+        feats[f"intensity_{target}"] = np.interp(
+            target, wavelength, y, left=np.nan, right=np.nan
+        )
 
     for lo, hi in ((400, 500), (500, 600), (600, 700)):
         m = (wavelength >= lo) & (wavelength <= hi)
