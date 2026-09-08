@@ -16,7 +16,7 @@ def load_spectrum(source):
         with open(source, "r", errors="ignore") as f:
             lines = f.readlines()
 
-        rows = []
+    rows = []
     for line in lines:
         parts = line.replace(",", " ").split()
         if len(parts) < 2:
