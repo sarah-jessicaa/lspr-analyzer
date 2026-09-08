@@ -16,9 +16,9 @@ def load_spectrum(source):
         with open(source, "r", errors="ignore") as f:
             lines = f.readlines()
 
-    rows = []
+        rows = []
     for line in lines:
-        parts = line.split()
+        parts = line.replace(",", " ").split()
         if len(parts) < 2:
             continue
         try:
@@ -26,7 +26,10 @@ def load_spectrum(source):
         except ValueError:
             continue
     if not rows:
-        raise ValueError("no numeric wavelength/intensity pairs found in file")
+        raise ValueError(
+            "no numeric wavelength/intensity pairs found in file "
+            "(expected two columns separated by whitespace or commas)"
+        )
     df = pd.DataFrame(rows, columns=["wavelength", "intensity"])
     return df.sort_values("wavelength").reset_index(drop=True)
 
