@@ -42,13 +42,11 @@ with st.sidebar:
     )
 
 spectra = {}
+unmatched = []
 for file in uploaded or []:
     label = parse_label(file.name)
     if label is None:
-        st.warning(
-            f"File `{file.name}` skipped. Expected format: `[species][concentration]%-[replicate].txt` "
-            f"(e.g., `sapi1%-1.txt`). Valid species: sapi, babi, ikan."
-        )
+        unmatched.append(file)
         continue
     try:
         df = load_spectrum(file)
@@ -56,6 +54,61 @@ for file in uploaded or []:
         st.warning(f"Error reading `{file.name}`: {e}")
         continue
     spectra[file.name] = {"label": label, "df": df}
+
+if unmatched:
+    st.markdown('<div class="section-title">Files needing manual labels</div>', unsafe_allow_html=True)
+    st.caption(
+        "These file names didn't match `[species][concentration]%-[replicate].txt`. "
+        "Set the labels manually and confirm to include them in the analysis."
+    )
+    for file in unmatched:
+        with st.expander(f"⚠ {file.name}"):
+            species = st.selectbox(
+                "Species", ["sapi", "babi", "ikan"], key=f"species_{file.name}"
+            )
+            concentration = st.number_input(
+                "Concentration (%)", min_value=0, max_value=100, value=1,
+                key=f"conc_{file.name}",
+            )
+            replicate = st.number_input(
+                "Replicate", min_value=1, max_value=99, value=1,
+                key=f"rep_{file.name}",
+            )
+            include = st.checkbox(
+                "Include this file with the labels above",
+                key=f"include_{file.name}",
+            )
+            if include:
+                try:
+                    df = load_spectrum(file)
+                except ValueError as e:
+                    st.warning(f"Error reading `{file.name}`: {e}")
+                else:
+                    spectra[file.name] = {
+                        "label": {
+                            "species": species,
+                            "concentration": int(concentration),
+                            "replicate": int(replicate),
+                        },
+                        "df": df,
+                    }
+                    
+if spectra:
+    with st.sidebar:
+        species_counts = {}
+        for item in spectra.values():
+            sp = item["label"]["species"]
+            species_counts[sp] = species_counts.get(sp, 0) + 1
+        summary = ", ".join(f"{count} {sp}" for sp, count in sorted(species_counts.items()))
+        st.markdown('<div class="section-title">Loaded data</div>', unsafe_allow_html=True)
+        st.caption(f"{len(spectra)} file(s) loaded — {summary}")
+        with st.expander("File details"):
+            for name, item in spectra.items():
+                lbl = item["label"]
+                st.caption(
+                    f"`{name}` — {lbl['species']} {lbl['concentration']}% "
+                    f"(replicate {lbl['replicate']})"
+                )
 
 if not spectra:
     st.markdown(
