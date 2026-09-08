@@ -18,8 +18,8 @@ def show_classification(all_rows):
 
     st.caption(
         f"{r['n_total']} spectra. Primary metric: stratified {r['folds']}-fold CV "
-        f"(mean ± std). Confusion matrices are from a single {r['n_train']}/{r['n_test']} "
-        "seeded split, illustrative for this sample size."
+        f"(mean ± std). Confusion matrices come from a single seeded "
+        f"{r['n_train']}/{r['n_test']} split and are illustrative for this sample size."
     )
 
     st.markdown('<div class="section-title">Projections</div>', unsafe_allow_html=True)
@@ -35,7 +35,7 @@ def show_classification(all_rows):
     )
     st.caption(
         "PCA uses no labels; LDA uses labels to maximize separation between species. "
-        "Hover a point to see its file name. Both are descriptive views; accuracy "
+        "Hover a point to see its file name. Both are descriptive views; the accuracy "
         "numbers come from cross-validation."
     )
 
@@ -54,7 +54,6 @@ def show_classification(all_rows):
 
     st.markdown('<div class="section-title">Confusion matrices (illustrative split)</div>', unsafe_allow_html=True)
     n_models = len(names)
-
     if n_models == 1:
         _, mid, _ = st.columns([1, 2, 1], gap="large")
         with mid:
@@ -71,7 +70,6 @@ def show_classification(all_rows):
                     use_container_width=True, theme=None,
                 )
     else:
-        # 3 or more models: 2 on top, rest dynamically below
         cols_top = st.columns(2, gap="large")
         for i in range(2):
             with cols_top[i]:
@@ -79,7 +77,6 @@ def show_classification(all_rows):
                     _confusion_fig(r["models"][names[i]]["confusion"], r["labels"], names[i]),
                     use_container_width=True, theme=None,
                 )
-        
         remaining = names[2:]
         if len(remaining) == 1:
             _, mid, _ = st.columns([1, 2, 1], gap="large")
@@ -110,25 +107,25 @@ def show_classification(all_rows):
         )
 
     st.markdown('<div class="section-title">Feature selection diagnostics</div>', unsafe_allow_html=True)
-    col_corr, col_anom = st.columns([3, 2], gap="large")
-    with col_corr:
-        st.plotly_chart(_corr_fig(r["corr"]), use_container_width=True, theme=None)
+    _, mid, _ = st.columns([1, 10, 1], gap="small")
+    with mid:
+        st.plotly_chart(_corr_fig(r["corr"]), use_container_width=False, theme=None)
+    st.markdown(
+        "- 🟦 Strong positive correlation: pairs near +1 carry redundant information.\n"
+        "- 🟥 Strong negative correlation: one feature rises while the other falls.\n"
+        "- ⬜ Near zero: little linear relationship between the pair.\n"
+    )
+
+    st.markdown("**Anomaly detection (IsolationForest)**")
+    if r["anomalies"]:
+        for fn, sc in r["anomalies"]:
+            st.markdown(f"- `{fn}` (score {sc:.3f})")
         st.caption(
-            "Blue: strong positive correlation, red: negative. Pairs near 1 are redundant. "
-            "Variance threshold and RFE are deferred post-deadline as these 16 features "
-            "are already curated via domain knowledge."
+            "Flagged samples deserve a manual check: possible measurement artifact "
+            "or mislabeling, not necessarily a model failure."
         )
-    with col_anom:
-        st.markdown("**Anomaly detection (IsolationForest)**")
-        if r["anomalies"]:
-            for fn, sc in r["anomalies"]:
-                st.markdown(f"- `{fn}` (score {sc:.3f})")
-            st.caption(
-                "Flagged samples deserve a manual check: possible measurement artifact "
-                "or mislabeling, not necessarily a model failure."
-            )
-        else:
-            st.caption("No samples flagged as anomalies.")
+    else:
+        st.caption("No samples flagged as anomalies.")
 
 
 def _scatter(coords, xtitle, ytitle, r):
@@ -186,15 +183,17 @@ def _importance_fig(importance):
 
 
 def _corr_fig(corr):
+    labels = [k.replace("_", " ") for k in FEATURE_KEYS]
     fig = go.Figure(go.Heatmap(
-        z=corr, x=FEATURE_KEYS, y=FEATURE_KEYS,
+        z=corr, x=labels, y=labels,
         colorscale="RdBu", zmin=-1, zmax=1,
         xgap=1, ygap=1,
     ))
     fig.update_layout(
-        height=480,
-        margin=dict(l=10, r=10, t=20, b=90),
-        xaxis=dict(tickfont=dict(size=8), tickangle=-55),
-        yaxis=dict(tickfont=dict(size=8), autorange="reversed"),
+        width=760,
+        height=620,
+        margin=dict(l=140, r=60, t=20, b=110),
+        xaxis=dict(tickfont=dict(size=10), tickangle=-45),
+        yaxis=dict(tickfont=dict(size=10), autorange="reversed"),
     )
     return fig

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import streamlit as st
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
@@ -45,6 +46,7 @@ def _make_models(random_state):
     }
 
 
+@st.cache_data(show_spinner=False)
 def analyze(all_rows, test_size=0.25, random_state=42, cv=5):
     X, y_str, df = build_dataset(all_rows)
 
@@ -91,14 +93,17 @@ def analyze(all_rows, test_size=0.25, random_state=42, cv=5):
             importance[name] = dict(
                 zip(FEATURE_KEYS, step.feature_importances_))
 
-    corr = np.corrcoef(Xs, rowvar=False)
+    corr = np.corrcoef(X, rowvar=False)
 
-    iso = IsolationForest(random_state=random_state, contamination="auto")
-    preds = iso.fit_predict(Xs)
-    scores = iso.score_samples(Xs)
+    iso = IsolationForest(
+        n_estimators=200, contamination=0.05,
+        random_state=random_state)
+    anom = iso.fit_predict(Xs)
+    scores_iso = iso.decision_function(Xs)
     anomalies = [
-        (df["filename"].iloc[i], float(scores[i]))
-        for i in np.where(preds == -1)[0]
+        (fn, float(sc))
+        for fn, a, sc in zip(df["filename"], anom, scores_iso)
+        if a == -1
     ]
 
     return {
@@ -110,10 +115,10 @@ def analyze(all_rows, test_size=0.25, random_state=42, cv=5):
         "models": models,
         "importance": importance,
         "labels": labels,
+        "corr": corr,
+        "anomalies": anomalies,
         "n_total": int(X.shape[0]),
         "n_train": int(X_tr.shape[0]),
         "n_test": int(X_te.shape[0]),
         "folds": folds,
-        "corr": corr,
-        "anomalies": anomalies,
     }

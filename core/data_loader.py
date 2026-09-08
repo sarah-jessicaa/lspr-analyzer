@@ -2,8 +2,10 @@ import re
 from pathlib import Path
 
 import pandas as pd
+import streamlit as st
 
 
+@st.cache_data(show_spinner=False)
 def load_spectrum(source):
     if hasattr(source, "read"):
         raw = source.read()
@@ -24,7 +26,7 @@ def load_spectrum(source):
         except ValueError:
             continue
     if not rows:
-        raise ValueError("tidak ada pasangan numerik pada sumber data")
+        raise ValueError("no numeric wavelength/intensity pairs found in file")
     df = pd.DataFrame(rows, columns=["wavelength", "intensity"])
     return df.sort_values("wavelength").reset_index(drop=True)
 

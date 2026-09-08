@@ -1,4 +1,5 @@
 import numpy as np
+import streamlit as st
 from scipy.integrate import simpson
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 
@@ -11,6 +12,7 @@ FEATURE_COLUMNS = [
 ]
 
 
+@st.cache_data(show_spinner=False)
 def smooth(intensity, window=11, polyorder=2):
     x = np.asarray(intensity, dtype=float)
     w = int(window)
@@ -23,19 +25,21 @@ def smooth(intensity, window=11, polyorder=2):
     return savgol_filter(x, w, polyorder)
 
 
+@st.cache_data(show_spinner=False)
 def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_ratio=0.05):
     wavelength = np.asarray(wavelength, dtype=float)
     intensity = np.asarray(intensity, dtype=float)
+
+    feats = {name: np.nan for name in FEATURE_COLUMNS}
     if intensity.size < 8:
-        return {name: np.nan for name in FEATURE_COLUMNS}
+        return feats
+
     y = smooth(intensity, window, polyorder)
 
     # smoothing tebal khusus deteksi peak, agar stabil di plateau datar
     det_window = 151 if intensity.size > 151 else max(5, ((intensity.size - 1) // 2) * 2 + 1)
     y_det = savgol_filter(intensity, det_window, 3)
     prominence = prominence_ratio * (y_det.max() - y_det.min())
-
-    feats = {name: np.nan for name in FEATURE_COLUMNS}
 
     peaks, _ = find_peaks(y_det, prominence=prominence)
     if len(peaks) == 0:
@@ -61,9 +65,7 @@ def extract_features(wavelength, intensity, window=11, polyorder=2, prominence_r
         feats["asymmetry"] = (right_wl + left_wl - 2 * peak_wl) / width
 
     for target in (450, 550, 650):
-        feats[f"intensity_{target}"] = np.interp(
-            target, wavelength, y, left=np.nan, right=np.nan
-        )
+        feats[f"intensity_{target}"] = np.interp(target, wavelength, y)
 
     for lo, hi in ((400, 500), (500, 600), (600, 700)):
         m = (wavelength >= lo) & (wavelength <= hi)

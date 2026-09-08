@@ -2,12 +2,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from ui.spectrum_viewer import SPECIES_COLORS, base_layout
-
-CONC_SCALE = [
-    "#93c5fd", "#60a5fa", "#3b82f6", "#2563eb",
-    "#1d4ed8", "#1e40af", "#1e3a8a", "#172554",
-]
+from config import CONC_SCALE, INK, SPECIES_COLORS
+from ui.spectrum_viewer import base_layout
 
 
 def resolve_color_mode(spectra, requested):
@@ -41,7 +37,7 @@ def show_comparison(spectra, all_rows, color_by):
         for name, item in shown.items():
             label = item["label"]
             if mode == "species":
-                color = SPECIES_COLORS.get(label["species"], "#1a365d")
+                color = SPECIES_COLORS.get(label["species"], INK)
                 group = label["species"]
                 legend_name = label["species"]
             else:
@@ -76,7 +72,7 @@ def show_comparison(spectra, all_rows, color_by):
         fig.add_trace(go.Scatter(
             x=agg.index, y=agg.values,
             mode="lines+markers", name=species,
-            line=dict(color=SPECIES_COLORS.get(species, "#1a365d"), width=2),
+            line=dict(color=SPECIES_COLORS.get(species, INK), width=2),
         ))
     base_layout(fig, show_legend=True)
     fig.update_xaxes(title="Concentration (%)")

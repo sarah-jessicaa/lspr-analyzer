@@ -45,15 +45,10 @@ body,
     letter-spacing: 0.05em;
 }
 
-header {
+#MainMenu {
     visibility: hidden;
 }
 
-header [data-testid="stSidebarCollapsedControl"] {
-    visibility: visible;
-}
-
-#MainMenu,
 footer {
     visibility: hidden;
 }
