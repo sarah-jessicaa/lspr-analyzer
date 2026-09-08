@@ -3,7 +3,7 @@
 **An automated feature-extraction and machine-learning pipeline for gelatin
 authentication using Localized Surface Plasmon Resonance (LSPR) spectroscopy.**
 
-Live demo: [ISI DENGAN URL STREAMLIT CLOUD SETELAH DEPLOYMENT]
+Live demo: https://lspr-analyzer.streamlit.app
 Source: https://github.com/sarah-jessicaa/lspr-analyzer
 
 ---

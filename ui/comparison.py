@@ -19,7 +19,7 @@ def resolve_color_mode(spectra, requested):
 
 def show_comparison(spectra, all_rows, color_by):
     if len(spectra) < 2:
-        st.info("Upload lebih dari satu file untuk membandingkan spektrum.")
+        st.info("Upload at least two files to compare spectra.")
         return
 
     mode = resolve_color_mode(spectra, color_by)
@@ -33,7 +33,7 @@ def show_comparison(spectra, all_rows, color_by):
             if item["label"]["concentration"] in chosen_concs
         }
         if len(shown) < 2:
-            st.info("Pilih minimal dua konsentrasi untuk dibandingkan.")
+            st.info("Select at least two concentrations to compare.")
             return
 
         seen_groups = set()
