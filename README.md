@@ -164,7 +164,7 @@ Python, Streamlit, SciPy, NumPy, Pandas, scikit-learn, XGBoost, Plotly.
 
 ## License
 
-Code: MIT License - Copyright (c) 2026 Sarah Jessica Nauly Widodo.
+Code: MIT License - Copyright (c) 2026 Sarah Jessica.
 Permission is granted to use, copy, modify, and distribute this software
 for any purpose, with attribution.
 
