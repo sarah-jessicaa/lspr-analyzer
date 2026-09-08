@@ -29,6 +29,23 @@ CARD_SPEC = [
     ("auc", "AUC (×10³ a.u.nm)", lambda v: v / 1000.0),
 ]
 
+FEATURE_GROUPS = [
+    ("Resonance shape", ["peak_wavelength", "peak_intensity", "fwhm", "q_factor", "asymmetry"]),
+    ("Signal integral", ["auc"]),
+    ("Fixed-point intensities", ["intensity_450", "intensity_550", "intensity_650"]),
+    ("Regional slopes", ["slope_400_500", "slope_500_600", "slope_600_700"]),
+    ("Shape ratios", ["ratio_450_650", "ratio_550_650"]),
+    ("Distribution moments", ["centroid_wavelength", "skewness"]),
+]
+
+def _zebra_style(df):
+    return df.style.apply(
+        lambda row: [
+            "background-color: #f8fafc" if row.name % 2 else "background-color: #ffffff"
+            for _ in row
+        ],
+        axis=1,
+    )
 
 def _fmt(value):
     if value is None or (isinstance(value, float) and np.isnan(value)):
@@ -63,17 +80,24 @@ def show_feature_results(filename, features, all_rows):
             )
 
     st.markdown('<div class="section-title">All extracted features</div>', unsafe_allow_html=True)
-    st.caption("Each row is one feature. The Description column explains the physical meaning of the value.")
+    st.caption("Grouped by physical category. The Description column explains the meaning of each value.")
 
-    rows = []
-    for key, (label, unit, desc) in FEATURE_INFO.items():
-        rows.append({
-            "Feature": label,
-            "Value": _fmt(features.get(key, np.nan)),
-            "Unit": unit,
-            "Description": desc,
-        })
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    for group_title, keys in FEATURE_GROUPS:
+        st.markdown(f"**{group_title}**")
+        rows = []
+        for key in keys:
+            label, unit, desc = FEATURE_INFO[key]
+            rows.append({
+                "Feature": label,
+                "Value": _fmt(features.get(key, np.nan)),
+                "Unit": unit,
+                "Description": desc,
+            })
+        st.dataframe(
+            _zebra_style(pd.DataFrame(rows)),
+            use_container_width=True,
+            hide_index=True,
+        )
 
     st.download_button(
         "Download CSV (all files)",
