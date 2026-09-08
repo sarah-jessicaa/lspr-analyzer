@@ -3,22 +3,22 @@ import pandas as pd
 import streamlit as st
 
 FEATURE_INFO = {
-    "peak_wavelength": ("Peak band center", "nm", "Panjang gelombang pusat pita resonansi LSPR"),
-    "peak_intensity": ("Peak intensity", "a.u.", "Intensitas maksimum pada puncak resonansi"),
-    "fwhm": ("FWHM", "nm", "Full Width at Half Maximum, lebar pita pada setengah tinggi puncak"),
-    "q_factor": ("Q-factor", "", "Rasio λmax terhadap FWHM, semakin tinggi semakin tajam resonansi"),
-    "auc": ("AUC", "a.u.nm", "Area under curve, total energi spektrum di seluruh rentang"),
-    "asymmetry": ("Asymmetry", "", "0 = simetris, positif = ekor ke kanan, negatif = ekor ke kiri"),
-    "intensity_450": ("Intensity @450nm", "a.u.", "Intensitas pada panjang gelombang 450 nm"),
-    "intensity_550": ("Intensity @550nm", "a.u.", "Intensitas pada panjang gelombang 550 nm"),
-    "intensity_650": ("Intensity @650nm", "a.u.", "Intensitas pada panjang gelombang 650 nm"),
-    "slope_400_500": ("Slope 400-500nm", "a.u./nm", "Gradien spektrum pada rentang 400-500 nm"),
-    "slope_500_600": ("Slope 500-600nm", "a.u./nm", "Gradien spektrum pada rentang 500-600 nm"),
-    "slope_600_700": ("Slope 600-700nm", "a.u./nm", "Gradien spektrum pada rentang 600-700 nm"),
-    "ratio_450_650": ("Ratio 450/650", "", "Rasio intensitas 450 terhadap 650 nm, descriptor bentuk yang relatif bebas konsentrasi"),
-    "ratio_550_650": ("Ratio 550/650", "", "Rasio intensitas 550 terhadap 650 nm, descriptor bentuk yang relatif bebas konsentrasi"),
-    "centroid_wavelength": ("Centroid (nm)", "", "Pusat massa seluruh spektrum, tertimbang intensitas"),
-    "skewness": ("Skewness", "", "Kemencengan distribusi spektral terhadap centroid"),
+    "peak_wavelength": ("Peak band center", "nm", "Wavelength at the center of the LSPR resonance band"),
+    "peak_intensity": ("Peak intensity", "a.u.", "Maximum intensity of the smoothed resonance"),
+    "fwhm": ("FWHM", "nm", "Full width at half maximum of the resonance band"),
+    "q_factor": ("Q-factor", "", "Peak band center divided by FWHM; higher means a sharper resonance"),
+    "auc": ("AUC", "a.u.nm", "Area under the smoothed curve over the measured range"),
+    "asymmetry": ("Asymmetry", "", "0 = symmetric; positive = right tail; negative = left tail"),
+    "intensity_450": ("Intensity @450nm", "a.u.", "Intensity at 450 nm"),
+    "intensity_550": ("Intensity @550nm", "a.u.", "Intensity at 550 nm"),
+    "intensity_650": ("Intensity @650nm", "a.u.", "Intensity at 650 nm"),
+    "slope_400_500": ("Slope 400-500nm", "a.u./nm", "Linear gradient over 400-500 nm"),
+    "slope_500_600": ("Slope 500-600nm", "a.u./nm", "Linear gradient over 500-600 nm"),
+    "slope_600_700": ("Slope 600-700nm", "a.u./nm", "Linear gradient over 600-700 nm"),
+    "ratio_450_650": ("Ratio 450/650", "", "Intensity ratio 450 to 650 nm; a shape descriptor largely free of concentration scaling"),
+    "ratio_550_650": ("Ratio 550/650", "", "Intensity ratio 550 to 650 nm; a shape descriptor largely free of concentration scaling"),
+    "centroid_wavelength": ("Centroid (nm)", "", "Intensity-weighted center of mass of the full spectrum"),
+    "skewness": ("Skewness", "", "Asymmetry of the spectral distribution around the centroid"),
 }
 
 CARD_SPEC = [
@@ -43,8 +43,8 @@ def _fmt(value):
 def show_feature_results(filename, features, all_rows):
     st.markdown('<div class="section-title">Core features</div>', unsafe_allow_html=True)
     st.caption(
-        f"Kartu dan tabel di bawah merujuk pada file terpilih: {filename}. "
-        "Unduhan CSV mencakup seluruh file yang di-upload."
+        f"Cards and table below refer to the selected file: {filename}. "
+        "The CSV download covers all uploaded files."
     )
 
     cols = st.columns(len(CARD_SPEC), gap="small")
@@ -63,7 +63,7 @@ def show_feature_results(filename, features, all_rows):
             )
 
     st.markdown('<div class="section-title">All extracted features</div>', unsafe_allow_html=True)
-    st.caption("Setiap baris adalah satu fitur. Kolom Description menjelaskan makna fisik dari angka tersebut.")
+    st.caption("Each row is one feature. The Description column explains the physical meaning of the value.")
 
     rows = []
     for key, (label, unit, desc) in FEATURE_INFO.items():

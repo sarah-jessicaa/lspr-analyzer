@@ -5,3 +5,5 @@ data/
 .streamlit/secrets.toml
 .agents/
 .claude/
+*.xlsx
+*.xls
